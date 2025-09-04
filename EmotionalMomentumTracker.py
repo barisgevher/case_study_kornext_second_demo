@@ -9,7 +9,7 @@ class EmotionalMomentumTracker:
     def __init__(self):
         self.emotional_patterns = {
             'anger_escalation': [
-                'artık', 'yeter', 'bıktım', 'dayanamam', 'sınırım', 'öfke'
+                'artık', 'yeter', 'bıktım', 'dayanamıyorum', 'sınırım', 'öfke'
             ],
             'desperation_signals': [
                 'çaresiz', 'yardım', 'rica', 'lutfen', 'yapalım', 'umut'

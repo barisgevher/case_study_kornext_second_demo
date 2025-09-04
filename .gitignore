@@ -1,0 +1,74 @@
+# JetBrains (PyCharm) IDE dosyaları
+.idea/
+*.iml
+
+# Python'un derlenmiş dosyaları ve cache'leri
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Sanal ortam (Virtual Environment) klasörleri
+# Bu klasörler projenize özel bağımlılıkları içerir ve çok büyük olabilir.
+# Herkes kendi sanal ortamını 'requirements.txt' dosyasından oluşturmalıdır.
+venv/
+.venv/
+env/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# Dağıtım ve paketleme dosyaları
+dist/
+build/
+*.egg-info/
+*.egg
+/downloads/
+/htmlcov/
+.tox/
+
+# Veritabanı dosyaları
+*.sqlite3
+*.db
+
+# NLP projesine özel dosyalar
+# ---------------------------------
+
+# Büyük veri dosyaları (CSV, JSON, TXT vb.)
+# Genellikle 'data/' veya 'datasets/' klasöründe tutulurlar.
+# Reponuzun şişmesini engellemek için bunları yüklemeyin.
+# Bunun yerine README.md dosyasında verinin nereden indirileceğini açıklayın.
+data/
+datasets/
+*.csv
+*.json
+*.txt
+# Eğer küçük ve gerekli veri dosyalarınız varsa,
+# aşağıdaki satırlarla onlara istisna tanıyabilirsiniz:
+# !data/gerekli-veri.csv
+
+# Eğitilmiş modeller ve checkpoint'ler
+# Bunlar genellikle yüzlerce MB veya GB boyutunda olabilir.
+models/
+checkpoints/
+*.pt
+*.pth
+*.h5
+*.hdf5
+*.bin
+*.model
+*.pb
+
+# Jupyter Notebook checkpoint'leri
+.ipynb_checkpoints
+
+# Hassas bilgiler ve API anahtarları
+# Genellikle .env dosyasında saklanır ve asla reponuza eklenmemelidir.
+.env
+.env.*
+secrets.ini
+config.yaml
+
+# İşletim sistemine özel dosyalar
+.DS_Store
+Thumbs.db
