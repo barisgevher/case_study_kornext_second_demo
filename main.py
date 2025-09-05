@@ -1,158 +1,138 @@
-from PetitionAnalyzer import PetitionAnalyzer
+import os
+import json
+import tkinter as tk
+from tkinter import filedialog, scrolledtext, messagebox
+from datetime import datetime
+
+# Yeni yapıya göre doğru importlar
+# Projenizin 'src' klasörünü Python'un tanıması için yola ekliyoruz
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+
+from src.petition_analyzer import PetitionAnalyzer
+from src.utils import pdf_to_text  # PDF okuyucuyu utils'e taşıdık
+
+# --- Ayarlar ve Sabitler ---
+DATA_FOLDER = "data"
+TRAIN_DATA_FILE = os.path.join(DATA_FOLDER, "train_data.txt")
+JSON_RESULTS_FILE = os.path.join(DATA_FOLDER, "petition_analyze_results.json")
 
 
-def demo_algorithm():
-    """ algoritmanın demo çalışması"""
+def setup_project_structure():
+    """Gerekli klasörlerin var olduğundan emin olur."""
+    os.makedirs(DATA_FOLDER, exist_ok=True)
 
-    print("🚀 ÇKŞÇM - Yaratıcı Dilekçe Analiz Algoritması Demo")
-    print("=" * 60)
 
-    # Algoritma başlatma
+def save_to_json(result: dict):
+    """Analiz sonucunu JSON dosyasına kaydeder/günceller."""
+    if os.path.exists(JSON_RESULTS_FILE):
+        with open(JSON_RESULTS_FILE, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    else:
+        data = []
+    data.append(result)
+    with open(JSON_RESULTS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+
+def save_to_training_data(text: str, base_filename: str):
+    """Metni, başlık bilgileriyle birlikte train_data.txt'ye ekler."""
+    with open(TRAIN_DATA_FILE, "a", encoding="utf-8") as f_train:
+        f_train.write(f"\n\n{'=' * 50}\n")
+        f_train.write(f"Dosya: {base_filename}\n")
+        f_train.write(f"Tarih: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f_train.write(f"{'=' * 50}\n")
+        f_train.write(text.strip())
+        f_train.write("\n")
+
+
+def process_text_and_update_ui(text: str, source_name: str):
+    """Verilen metni analiz eder, kaydeder ve arayüzü günceller."""
+    if not text.strip():
+        messagebox.showwarning("Uyarı", "İşlenecek metin bulunamadı.")
+        return
+
+    # 1. Analiz
     analyzer = PetitionAnalyzer()
+    result = analyzer.analyze_petition_creative(text)
+    result["kaynak_dosya"] = source_name
 
-    # Test dilekçeleri
-    test_petitions = [
-        {
-            "name": "Öfkeli Vatandaş",
-            "text": """
-            Belediye Başkanlığı!
+    # 2. Sonuçları JSON olarak kaydet
+    save_to_json(result)
 
-            ARTIK YETER! Her gün aynı şey... Sokağımızdaki çöpler toplanmıyor!
-            Defalarca aradık, hiç kimse ilgilenmiyor. Koku dayanılmaz halde!
+    # 3. Eğitim verisine ekle
+    save_to_training_data(text, source_name)
 
-            Ya bu işi halledersiniz ya da medyaya gideceğim!
-            Acilen çözüm bekliyoruz!!!
+    # 4. Arayüzü güncelle
+    result_text.config(state=tk.NORMAL)
+    result_text.delete('1.0', tk.END)
+    pretty_result = json.dumps(result, indent=4, ensure_ascii=False)
+    result_text.insert(tk.END, pretty_result)
+    result_text.config(state=tk.DISABLED)
 
-            Mehmet ÖZKAYA - Çankaya Mahallesi sakinleri adına
-            """
-        },
-        {
-            "name": "Kibar Yaşlı Vatandaş",
-            "text": """
-            Sayın Belediye Başkanımız,
-
-            Emekliyim ve Yeşiltepe Mahallesi Gül Sokak'ta tek başıma yaşıyorum.
-
-            Mahallemizde sokak lambaları çalışmıyor. Akşamları eve giderken
-            çok korkuyorum. Yaşlı bir vatandaş olarak bu durumdan endişeliyim.
-
-            Mümkünse bu konuya dikkat ederseniz çok memnun olurum.
-            Saygılarımla teşekkür ederim.
-
-            Fatma YILMAZ
-            """
-        },
-        {
-            "name": "Acil Güvenlik Sorunu",
-            "text": """
-            ACİL DURUM!
-
-            Çocuk parkındaki salıncaklar KIRILMIŞ! Çocuklar yaralanabilir!
-            Bu sabah küçük oğlum neredeyse düşüyordu.
-
-            HEMEN müdahale edilmeli! Can güvenliği söz konusu!
-            Derhal harekete geçin!
-
-            Ahmet VELİOĞLU - Merkez Mahallesi Veliler Derneği Başkanı
-            Tel: 0532 123 45 67
-            """
-        }
-    ]
-
-    # Her test dilekçesini analiz et
-    for i, petition in enumerate(test_petitions, 1):
-        print(f"\n📋 TEST {i}: {petition['name']}")
-        print("-" * 40)
-
-        # Analiz yap
-        result = analyzer.analyze_petition_creative(petition['text'])
-
-        # Özet sonuçları göster
-        print(f"✅ Analiz tamamlandı!")
-        print(f"🎯 Güven Seviyesi: %{result['metadata']['confidence_level'] * 100:.1f}")
-        print(f"🎭 Baskın Duygu: {result['emotional_intelligence']['dominant_emotion']}")
-        print(f"⚡ Aciliyet: {result['extracted_information']['urgency_level']}")
-        print(f"🏷️  Konu: {result['extracted_information']['subject_category']}")
-        print(f"⚠️  Risk Seviyesi: {result['creative_insights']['risk_assessment']['risk_level']}")
-
-        # Eylem önerisi sayısı
-        rec_count = len(result['actionable_recommendations'])
-        print(f"💡 Eylem Önerisi: {rec_count} adet")
-
-        if i < len(test_petitions):
-            print("\n" + "=" * 60)
-
-    # Sistem istatistikleri
-    print(f"\n📊 SİSTEM İSTATİSTİKLERİ:")
-    stats = analyzer.get_system_statistics()
-    print(f"  • Toplam Analiz: {stats['performance_metrics']['total_analyzed']}")
-    print(f"  • Başarı Oranı: %{stats['success_rate']}")
-    print(f"  • Ortalama İşlem Süresi: {stats['performance_metrics']['average_processing_time']} saniye")
-    print(f"  • Ortalama Güven: %{stats['average_confidence'] * 100:.1f}")
-
-    return analyzer, test_petitions
+    status_label.config(
+        text=f"✅ Başarılı: '{source_name}' işlendi ve kaydedildi.",
+        fg="green"
+    )
 
 
-def detailed_analysis_example():
-    """Detaylı analiz örneği"""
-
-    analyzer = PetitionAnalyzer()
-
-    # Karmaşık test dilekçesi
-    # test ederken ismi yanlış buluyor Fenerbahçe mah
-    complex_petition = """
-Merhabalar,
-Babam 75 yaşında ve kalp hastası. Yaşadığımız binanın asansörü üç aydır arızalı.
- Defalarca site yönetimine bildirdik, ancak henüz bir gelişme yok. Belediyenin veya ilgili kurumun denetleme yaparak gerekli işlemleri başlatmasını talep ediyorum.
-Serkan Güler, Keçiören / Ankara
-    """
-
-    print("🔍 DETAYLI ANALİZ ÖRNEĞİ")
-    print("=" * 50)
-
-    # Analiz yap
-    result = analyzer.analyze_petition_creative(complex_petition)
+def handle_pdf_selection():
+    """PDF seçme ve işleme mantığı."""
+    path = filedialog.askopenfilename(filetypes=[("PDF Dosyaları", "*.pdf")])
+    if not path:
+        return
+    try:
+        text = pdf_to_text(path)
+        base_filename = os.path.splitext(os.path.basename(path))[0]
+        process_text_and_update_ui(text, base_filename)
+    except Exception as e:
+        messagebox.showerror("Hata", f"PDF okunurken bir hata oluştu:\n{e}")
 
 
-    # Detaylı rapor üret
-    detailed_report = analyzer.generate_detailed_report(result)
-    print(detailed_report)
-
-    # JSON sonucu da göster
-    print("\n" + "=" * 70)
-    print("📄 JSON ÇIKTI ÖRNEĞİ (Temel Bilgiler):")
-    print("=" * 70)
-
-    simplified_result = {
-        "extracted_info": result['extracted_information'],
-        "emotional_state": result['emotional_intelligence']['dominant_emotion'],
-        "confidence": result['metadata']['confidence_level'],
-        "risk_level": result['creative_insights']['risk_assessment']['risk_level'],
-        "recommendations_count": len(result['actionable_recommendations'])
-    }
-
-    import json
-    print(json.dumps(simplified_result, ensure_ascii=False, indent=2))
-
-    return result
+def handle_text_input():
+    """Metin kutusundan veri işleme mantığı."""
+    text = input_text.get("1.0", tk.END)
+    # Metin girişi için benzersiz bir isim oluştur
+    source_name = f"metin_girdisi_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    process_text_and_update_ui(text, source_name)
 
 
-# Ana çalıştırma fonksiyonu
+# --- Arayüz Kurulumu ---
 if __name__ == "__main__":
-    print("🧠 ÇKŞÇM: Çok Katmanlı Şüpheci Çıkarım Motoru")
-    print("🎯 Yaratıcı Dilekçe Analiz Algoritması")
-    print("🚀 Algoritma test ediliyor...\n")
+    setup_project_structure()
 
-    # Demo çalıştır
-    # analyzer, test_cases = demo_algorithm()
+    root = tk.Tk()
+    root.title("Dilekçe Analiz Aracı")
+    root.geometry("800x600")
 
-    print("\n" + "🔥" * 20 + " DETAYLI ANALİZ " + "🔥" * 20)
+    main_frame = tk.Frame(root, padx=10, pady=10)
+    main_frame.pack(fill=tk.BOTH, expand=True)
 
-    # Detaylı analiz örneği
-    detailed_result = detailed_analysis_example()
+    # Sol Taraf: Girdi Alanları
+    left_frame = tk.Frame(main_frame, width=380)
+    left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
 
+    tk.Label(left_frame, text="1. PDF Dosyası Seçin:", font=("Helvetica", 10, "bold")).pack(anchor="w")
+    pdf_button = tk.Button(left_frame, text="PDF Seç ve İşle", command=handle_pdf_selection)
+    pdf_button.pack(fill=tk.X, pady=(5, 20))
 
-    print(f"\n✅ Algoritma başarıyla test edildi!")
-    print(f"🎨 Yaratıcı özellikler: Duygusal momentum, sosyal profil, şüpheci doğrulama")
-   #  print(f"⚡ Performance: Ortalama {analyzer.performance_metrics['average_processing_time']:.3f} saniye")
-    print(f"🎯 Bu algoritma tamamen özgün ve yaratıcı yaklaşımlar içeriyor!")
+    tk.Label(left_frame, text="2. Veya Metni Buraya Yapıştırın:", font=("Helvetica", 10, "bold")).pack(anchor="w")
+    input_text = scrolledtext.ScrolledText(left_frame, height=15, wrap=tk.WORD)
+    input_text.pack(fill=tk.BOTH, expand=True, pady=5)
+
+    text_button = tk.Button(left_frame, text="Metni İşle", command=handle_text_input)
+    text_button.pack(fill=tk.X, pady=(5, 0))
+
+    # Sağ Taraf: Sonuç Ekranı
+    right_frame = tk.Frame(main_frame, width=380)
+    right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(5, 0))
+
+    tk.Label(right_frame, text="Analiz Sonucu:", font=("Helvetica", 10, "bold")).pack(anchor="w")
+    result_text = scrolledtext.ScrolledText(right_frame, height=20, wrap=tk.WORD, state=tk.DISABLED)
+    result_text.pack(fill=tk.BOTH, expand=True, pady=5)
+
+    # Alt Taraf: Durum Etiketi
+    status_label = tk.Label(root, text="İşlem için bir dosya seçin veya metin girin.", bd=1, relief=tk.SUNKEN, anchor="w")
+    status_label.pack(side=tk.BOTTOM, fill=tk.X)
+
+    root.mainloop()

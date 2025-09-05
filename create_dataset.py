@@ -1,6 +1,6 @@
 import os
 import re
-from PetitionAnalyzer import PetitionAnalyzer
+from src.petition_analyzer import PetitionAnalyzer
 import pandas as pd
 
 def process_data(file_path):
@@ -84,12 +84,12 @@ def create_training_dataset(folder_path: str, output_filename: str):
 # 6. ADIM: Betiği çalıştırılabilir yap
 if __name__ == "__main__":
     # Ayarları buradan yönetebilirsiniz
-    TEXT_FILES_FOLDER = "text_files"
-    OUTPUT_EXCEL_FILE = "egitim_veriseti.xlsx"
+    TRAINING_FILES_FOLDER = "data"
+    OUTPUT_EXCEL_FILE = "data/train_dataset.xlsx"
 
     # Ana fonksiyonu çağır
     training_df = create_training_dataset(
-        folder_path=TEXT_FILES_FOLDER,
+        folder_path=TRAINING_FILES_FOLDER,
         output_filename=OUTPUT_EXCEL_FILE
     )
 

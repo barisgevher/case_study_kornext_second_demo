@@ -13,45 +13,56 @@ class SocialSignalAnalyzer:
             'family_status': {
                 'has_family': [
                     'çocuk', 'çocuğ', 'bebek', 'aile', 'eş', 'karı', 'koca',
-                    'anne', 'baba', 'oğl', 'kız', 'evlat', 'torun'
+                    'anne', 'baba', 'oğl', 'kız', 'evlat', 'torun',
+                    'yeğen', 'kardeş', 'akraba', 'evli'
                 ],
                 'single_indicators': [
-                    'tek başına', 'yalnız', 'kimsem yok', 'tek kişi'
+                    'tek başına', 'yalnız', 'kimsem yok', 'tek kişi', 'bekar', 'dul'
                 ],
                 'elderly_indicators': [
-                    'yaşlı', 'emekli', 'büyük', 'ihtiyar', 'nine', 'dede'
+                    'yaşlı', 'emekli', 'büyük', 'ihtiyar', 'nine', 'dede',  '65 yaş', 'kıdemli', 'yaşlılık'
                 ]
             },
 
             'economic_status': {
                 'financial_stress': [
                     'para', 'maaş', 'geçim', 'borç', 'kredi', 'fatura',
-                    'pahalı', 'masraf', 'bütçe', 'ekonomik'
+                    'pahalı', 'masraf', 'bütçe', 'ekonomik',
+                    'icra', 'haciz', 'yoksulluk', 'işsiz', 'kıt kanaat'
                 ],
                 'property_ownership': [
                     'ev sahibi', 'malik', 'mülk', 'apartman', 'daire',
-                    'kiracı', 'kira', 'emlak'
+                    'kiracı', 'kira', 'emlak', 'arsa', 'dükkan', 'tapu'
+                ],
+                'employment_status': [
+                    'çalışan', 'işsiz', 'esnaf', 'memur', 'işçi', 'serbest meslek'
                 ]
             },
 
             'education_level': {
                 'high_education': [
-                    'üniversite', 'doktor', 'mühendis', 'öğretmen',
-                    'araştırma', 'proje', 'analiz', 'değerlendirme'
+                    'üniversite', 'doktor', 'mühendis', 'öğretmen','avukat',
+                    'araştırma', 'proje', 'analiz', 'değerlendirme',  'akademik'
                 ],
                 'formal_language': [
                     'müsaade', 'takdir', 'arz', 'istirham', 'maruzat',
-                    'gereği', 'münasip', 'tensib'
+                    'gereği', 'münasip', 'tensib',  'bilvekale', 'tarafıma', 'tebliğ'
                 ]
             },
 
             'civic_engagement': {
                 'active_citizen': [
                     'hak', 'görev', 'sorumluluk', 'demokrasi', 'katılım',
-                    'önceden', 'defalarca', 'takip', 'başvuru'
+                    'önceden', 'defalarca', 'takip', 'başvuru', 'dilekçe', 'vatandaş'
                 ],
                 'community_awareness': [
-                    'mahalle', 'komşu', 'herkes', 'tüm', 'genel', 'ortak'
+                    'mahalle', 'komşu', 'herkes', 'tüm', 'genel', 'ortak',  'kamuoyu', 'sakinleri', 'hepimiz'
+                ]
+            },
+            'health_status': {
+                'has_health_issue': [
+                    'hasta', 'engelli', 'rapor', 'ilaç', 'tedavi', 'ameliyat',
+                    'kronik', 'rahatsızlık', 'sakat', 'malul'
                 ]
             }
         }

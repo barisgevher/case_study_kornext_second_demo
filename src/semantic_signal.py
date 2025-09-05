@@ -1,13 +1,9 @@
-import re
-import math
-from typing import Dict, List, Tuple, Optional, Set
-from collections import defaultdict, Counter
+from typing import Dict, List
 from dataclasses import dataclass
-import json
 
-from EmotionalMomentumTracker import EmotionalMomentumTracker
-from SkepticalValidator import SkepticalValidator
-from SocialSignalAnalyzer import SocialSignalAnalyzer
+from src.emotional_momentum_tracker import EmotionalMomentumTracker
+from validator import SkepticalValidator
+from social_analyzer import SocialSignalAnalyzer
 
 
 @dataclass
@@ -58,10 +54,12 @@ class SkepticalInferenceEngine:
             'person_identity': {
                 'signature_patterns': [
                     r'saygılarım(?:la|ızla)[,\s]*([A-ZÇĞİÖŞÜ][a-zçğıöşüA-ZÇĞİÖŞÜ\s]{3,35})$',
+                    r'saygılarımla[,\s\n]+([A-ZÇĞİÖŞÜ][a-zçğıöşüA-ZÇĞİÖŞÜ\s]{3,35})$',
                     r'(?:ben|adım|ismim)\s+([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)+)',
                     r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)(?:\s+olarak|\s+adına)'
                     r'(?:adım|ismim|ben)\s+([A-ZÇĞİÖŞÜ][a-zçğıöşü]+\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)',
-                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)(?:\s+(?:olarak|adına))'
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)(?:\s+(?:olarak|adına))',
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+\s[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s*$'
                 ],
                 'context_clues': [
                     'vatandaşınız', 'sakin', 'mukim', 'ikamet', 'adına'
@@ -75,16 +73,20 @@ class SkepticalInferenceEngine:
             'location_hierarchy': {
                 'district_patterns': [
                     r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s+(?:ilçesi|İlçesi)',
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü\s]+)\s+(?:ilçesi|İlçesi|ilçesine)',
                     r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+/[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)'
                 ],
                 'neighborhood_patterns': [
                     r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s+(?:mahallesi|Mahallesi|mah\.)',
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü\s]+)\s+(?:mahallesi|Mahallesi|mah\.|mh\.)',
                     r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s+(?:köyü|Köyü)'
                 ],
                 'street_patterns': [
                     r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s+(?:caddesi|Caddesi|cad\.)',
                     r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s+(?:sokağı|Sokağı|sok\.)',
-                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s+(?:bulvarı|Bulvarı|blv\.)'
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s+(?:bulvarı|Bulvarı|blv\.)',
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü\s]+)\s+(?:sokağı|Sokağı|sok\.|sk\.)',
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü\s]+)\s+(?:Apartmanı|apartmanı|sitesi|Sitesi)'
                 ],
                 'address_indicators': [
                     'yaşadığım', 'ikamet', 'oturduğum', 'evim', 'adresim'
@@ -95,11 +97,17 @@ class SkepticalInferenceEngine:
             'authority_recognition': {
                 'primary_authorities': [
                     r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s+(?:belediyesi|Belediyesi)',
-                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s+(?:büyükşehir|Büyükşehir)\s+(?:belediyesi|Belediyesi)'
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s+(?:büyükşehir|Büyükşehir)\s+(?:belediyesi|Belediyesi)',
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü\s]+)\s+(?:Belediyesi|Belediyesine|Büyükşehir)',
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü\s]+)\s+(?:Valiliği|Valiliğine)',
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü\s]+)\s+(?:Kaymakamlığı|Kaymakamlığına)'
                 ],
                 'secondary_authorities': [
                     r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s+(?:müdürlüğü|Müdürlüğü)',
-                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s+(?:başkanlığı|Başkanlığı)'
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s+(?:başkanlığı|Başkanlığı)',
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü\s]+)\s+(?:Müdürlüğü|Müdürlüğüne)',
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü\s]+)\s+(?:Başkanlığı|Başkanlığına)',
+                    r'([A-ZÇĞİÖŞÜ][a-zçğıöşü\s]+)\s+Daire\s+Başkanlığı'
                 ],
                 'authority_titles': [
                     r'sayın\s+([^,\n]{5,40})(?:,|\n)',

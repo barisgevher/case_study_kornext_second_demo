@@ -1,28 +1,26 @@
-import pandas as pd
-import ast  # String'i güvenli bir şekilde dictionary'e çevirmek için
 from typing import List
 
-# train_classification_model fonksiyonunuzun burada olduğunu varsayalım.
-# Eğer başka bir dosyadaysa, onu import etmeniz gerekir.
-# Örnek: from your_file import train_classification_model
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 import joblib
+import pandas as pd
+import ast
+
 
 def train_classification_model(texts: List[str], labels: List[str], model_type: str = "svm"):
     """Sınıflandırma modeli eğit"""
-    # ... (fonksiyonunuzun içeriği buraya gelecek, hiç değiştirmeyin)
+
     # TF-IDF vektörleştirme
     vectorizer = TfidfVectorizer(max_features=1000, ngram_range=(1, 2))
     X = vectorizer.fit_transform(texts)
 
     # Train-test split
     X_train, X_test, y_train, y_test = train_test_split(
-        X, labels, test_size=0.2, random_state=42, stratify=labels
-    ) # stratify eklemek dengeli dağılım için iyidir
+        X, labels, test_size=0.2, random_state=42
+    )
 
     # Model seçimi
     if model_type == "nb":
@@ -45,37 +43,40 @@ def train_classification_model(texts: List[str], labels: List[str], model_type: 
     print(f"Test Doğruluğu: {test_score:.2%}")
 
     # Modeli kaydet
-    joblib.dump(model, f"model_{model_type}.pkl")
-    joblib.dump(vectorizer, "vectorizer.pkl")
+    joblib.dump(model, f"models/model_{model_type}.pkl")
+    joblib.dump(vectorizer, "models/vectorizer.pkl")
 
     return model, vectorizer
 
-
 def extract_label_from_analysis(analysis_str: str, label_key: str = 'action'):
     """
-    Karmaşık analiz string'inden istenen etiketi (action, priority vb.) güvenli bir şekilde çıkarır.
+       String formatındaki bir "liste içindeki sözlük" yapısından istenen anahtarın değerini çıkarır.
+    Örnek: analysis_str = "[{'action': 'immediate_response', 'priority': 'P1'}]"
+           label_key = 'priority'
+           Dönen Değer => 'P1'.
     """
     try:
-        # String'i Python dictionary nesnesine dönüştür
-        data = ast.literal_eval(analysis_str)
-        # İç içe geçmiş yapıdan etiketi çıkar
-        label_list = data['analysis_']['person_']['moment']['citizen_g']['overall_']['citizen_u']
-        # Eğer liste boş değilse, ilk elemandaki etiketi al
-        if label_list:
-            return label_list[0].get(label_key, None)
-    except (ValueError, SyntaxError, KeyError, IndexError):
-        # Hatalı format, eksik anahtar veya boş liste durumunda None döndür
+        data_list = ast.literal_eval(str(analysis_str))
+        if isinstance(data_list, list) and data_list:
+            data_dict = data_list[0]
+
+            if isinstance(data_dict, dict):
+                return data_dict.get(label_key, None)
+    except(ValueError, SyntaxError, IndexError):
         return None
     return None
+
+
+
 
 
 # --- ANA SÜREÇ ---
 if __name__ == "__main__":
     # 1. AYARLAR: Dosya ve sütun adlarını buradan değiştirin
-    EXCEL_FILE_PATH = "egitim_veriseti.xlsx"  # Excel dosyanızın adı
+    EXCEL_FILE_PATH = "data/train_dataset.xlsx"  # Excel dosyanızın adı
     TEXT_COLUMN = "ham_metin"                # Metinleri içeren sütun
-    ANALYSIS_COLUMN = "analiz_sonucu"        # Analiz sonucunu içeren sütun
-    TARGET_LABEL = "action"                  # Tahmin etmek istediğimiz etiket ('action', 'priority', 'timeline' olabilir)
+    ANALYSIS_COLUMN = "actionable_recommendations"        # Analiz sonucunu içeren sütun
+    TARGET_LABEL = "priority"                  # Tahmin etmek istediğimiz etiket ('action', 'priority', 'timeline' olabilir)
 
     # 2. VERİYİ YÜKLEME
     try:
@@ -84,7 +85,11 @@ if __name__ == "__main__":
         print(f"HATA: '{EXCEL_FILE_PATH}' dosyası bulunamadı!")
         exit()
 
+    print("Excel'den okunan sütun adları:", df.columns)
     print(f"Excel'den {len(df)} satır veri okundu.")
+
+    print("\n'actionable_recommendations' Sütununun İçeriğinin İlk 5 Satırı:")
+    print(df['actionable_recommendations'].head())
 
     # 3. ETİKETLERİ AYIKLAMA
     # 'analiz_sonucu' sütunundaki her satır için extract_label_from_analysis fonksiyonunu uygula

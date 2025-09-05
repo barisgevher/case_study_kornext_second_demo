@@ -2,10 +2,10 @@ import re
 from collections import defaultdict
 from typing import Dict, List, Counter
 
-from EmotionalMomentumTracker import EmotionalMomentumTracker
-from SemanticSignal import SkepticalInferenceEngine
-from SkepticalValidator import SkepticalValidator
-from SocialSignalAnalyzer import SocialSignalAnalyzer
+from emotional_momentum_tracker import EmotionalMomentumTracker
+from semantic_signal import SkepticalInferenceEngine
+from validator import SkepticalValidator
+from social_analyzer import SocialSignalAnalyzer
 
 
 class PetitionAnalyzer:

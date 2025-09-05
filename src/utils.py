@@ -5,7 +5,7 @@ import PyPDF2
 import json
 import os
 
-from PetitionAnalyzer import PetitionAnalyzer
+from src.petition_analyzer import PetitionAnalyzer
 
 
 # 🔍 PDF'den metni oku

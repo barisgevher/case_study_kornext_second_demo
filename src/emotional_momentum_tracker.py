@@ -12,13 +12,19 @@ class EmotionalMomentumTracker:
                 'artık', 'yeter', 'bıktım', 'dayanamıyorum', 'sınırım', 'öfke'
             ],
             'desperation_signals': [
-                'çaresiz', 'yardım', 'rica', 'lutfen', 'yapalım', 'umut'
+                'çaresiz', 'yardım', 'rica', 'lutfen', 'yapalım', 'umut' 'ne olur', 'yalvarıyorum', 'son çare', 'mecbur', 'imdat'
             ],
             'politeness_markers': [
-                'saygı', 'nazik', 'kibarca', 'mümkün', 'uygun', 'teşekkür'
+                'saygı', 'nazik', 'kibarca', 'mümkün', 'uygun', 'teşekkür','hürmet', 'şükran', 'minnettar', 'efendim', 'lütfederseniz'
             ],
             'frustration_buildup': [
-                'tekrar', 'yine', 'gene', 'defalarca', 'kaçıncı', 'sürekli'
+                'tekrar', 'yine', 'gene', 'defalarca', 'kaçıncı', 'sürekli', 'hala', 'halen', 'ısrarla', 'kaç kere', 'defalarca'
+            ],
+            'positive_feedback': [
+                'memnun', 'başarılı', 'harika', 'çözüldü', 'elinize sağlık'
+            ],
+            'veiled_threats': [
+                'hukuki', 'yasal', 'mahkeme', 'dava', 'CİMER', 'şikayet', 'hakkımı'
             ]
         }
 
