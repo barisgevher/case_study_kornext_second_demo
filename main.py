@@ -1,9 +1,5 @@
-import json
-import os
-from typing import Dict
-
 from PetitionAnalyzer import PetitionAnalyzer
-from datetime import datetime
+
 
 def demo_algorithm():
     """ algoritmanın demo çalışması"""
@@ -117,6 +113,7 @@ Serkan Güler, Keçiören / Ankara
     # Analiz yap
     result = analyzer.analyze_petition_creative(complex_petition)
 
+
     # Detaylı rapor üret
     detailed_report = analyzer.generate_detailed_report(result)
     print(detailed_report)
@@ -139,37 +136,6 @@ Serkan Güler, Keçiören / Ankara
 
     return result
 
-def save_results(self, results: Dict, filename: str = None):
-        """Sonuçları JSON olarak kaydet"""
-        if not filename:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"petition_analysis_{timestamp}.json"
-
-
-        output_dir = "outputs"
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-            print(f"'{output_dir}' klasörü oluşturuldu")
-
-        file_path = os.path.join(output_dir, filename)
-
-        try:
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(results, f, ensure_ascii=False, indent=2)
-            print(f"Sonuçlar başarıyla kaydedildi: {file_path}")
-        except Exception as e:
-            print(f"Dosya kaydetme hatası: {e}")
-
-            try:
-                with open(filename, 'w', encoding='utf-8') as f:
-                    json.dump(results, f, ensure_ascii=False, indent=2)
-                print(f"Sonuçlar mevcut dizine kaydedildi: {filename}")
-            except Exception as e2:
-                print(f"Alternatif kaydetme de başarısız: {e2}")
-                return None
-
-        return filename
-
 
 # Ana çalıştırma fonksiyonu
 if __name__ == "__main__":
@@ -184,6 +150,7 @@ if __name__ == "__main__":
 
     # Detaylı analiz örneği
     detailed_result = detailed_analysis_example()
+
 
     print(f"\n✅ Algoritma başarıyla test edildi!")
     print(f"🎨 Yaratıcı özellikler: Duygusal momentum, sosyal profil, şüpheci doğrulama")
