@@ -3,6 +3,7 @@ import json
 import tkinter as tk
 from tkinter import filedialog, scrolledtext, messagebox
 from datetime import datetime
+import pandas as pd
 
 # Yeni yapıya göre doğru importlar
 # Projenizin 'src' klasörünü Python'un tanıması için yola ekliyoruz
@@ -63,6 +64,8 @@ def process_text_and_update_ui(text: str, source_name: str):
     # 3. Eğitim verisine ekle
     save_to_training_data(text, source_name)
 
+    append_to_excel_dataset(result, text, source_name)
+
     # 4. Arayüzü güncelle
     result_text.config(state=tk.NORMAL)
     result_text.delete('1.0', tk.END)
@@ -95,6 +98,39 @@ def handle_text_input():
     # Metin girişi için benzersiz bir isim oluştur
     source_name = f"metin_girdisi_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     process_text_and_update_ui(text, source_name)
+
+def append_to_excel_dataset(result: dict, text: str, source_name: str):
+    """
+    Yeni analiz sonucunu 'egitim_veriseti.xlsx' dosyasına yeni bir satır olarak ekler.
+    Dosya yoksa oluşturur.
+    """
+    excel_path = os.path.join(DATA_FOLDER, "egitim_veriseti.xlsx")
+
+    # 1. Yeni satır verisini hazırla (create_dataset.py'deki mantığın aynısı)
+    new_record = {
+        'dosya_adi': source_name,
+        'tarih': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'ham_metin': text.strip(),
+        **result  # Analiz sonucundaki tüm anahtarları ayrı sütunlar olarak aç
+    }
+    new_row_df = pd.DataFrame([new_record])
+
+    # 2. Mevcut Excel dosyasını oku ve yeni satırı ekle
+    try:
+        if os.path.exists(excel_path):
+            # Dosya varsa, oku ve sonuna ekle
+            existing_df = pd.read_excel(excel_path)
+            updated_df = pd.concat([existing_df, new_row_df], ignore_index=True)
+        else:
+            # Dosya yoksa, bu yeni satır ilk veri olacak
+            updated_df = new_row_df
+
+        # 3. Güncellenmiş DataFrame'i tekrar Excel'e yaz
+        updated_df.to_excel(excel_path, index=False)
+
+    except Exception as e:
+        # Dosya başka bir programda açıksa veya başka bir hata olursa...
+        messagebox.showerror("Excel Yazma Hatası", f"Eğitim veriseti güncellenemedi:\n{e}")
 
 
 # --- Arayüz Kurulumu ---
