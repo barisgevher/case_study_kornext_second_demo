@@ -460,6 +460,21 @@ JSON
 </details>
 
   
+**İşlenen verileri makine öğrenmesi algoritmalarında kullanabilmek için bir veri tabanına dönüştürmek**
+
+**öncelikle  projenin kök dizininde şu komutu çalıştırın**
+```sh
+   python create_dataset.py
+```
+Bu kod sizin bir makine öğrenmesi algortması eğitebilmeniz için data klasörü altında "training_dataset.xlsx" dosyasını oluşturması veya halihazırda varsa son işlenen verileri de eklemesi gerekir
+
+**İstediğiniz algortitmayı seçtikten sonra betiği çalıştırıp modelinizi otomatik olarak kayıt etmek için**
+```sh
+   python train_model.py
+```
+komutunu çalıştırın.
+
+
 
 
 
