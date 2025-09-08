@@ -45,10 +45,10 @@ Projeyi yerel makinenizde çalıştırmak için aşağıdaki adımları izleyin.
 
 **Karşınıza çıkan ekrana pdf seç ve işle diyerek bir pdf seçerseniz şu şekilde bir sonuçla karşılaşırsınız**
 
-![PDF işleme sonuçları](<img width="931" height="611" alt="Image" src="https://github.com/user-attachments/assets/11b2ea6f-f952-43b5-aa77-10dfbf1c6a1c" />)
+![PDF işleme sonuçları](screenshots/uygulama_sonuc.png)
 
 **Eğer hazırda metin halinde bir veriniz varsa hızlıca işlemek için metin giriş kısmını kullanabilirsiniz**
 
-![PDF işleme sonuçları](<img width="933" height="616" alt="Image" src="https://github.com/user-attachments/assets/e3fb122e-4b84-4aaf-9f03-74254d8e5309" />)
+![Metin işleme sonuçları](screenshots/metin_taraf_sonuc.png)
 
 
