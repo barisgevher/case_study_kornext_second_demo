@@ -137,6 +137,7 @@ Serkan Güler, Keçiören / Ankara
     return result
 
 
+"""
 # Ana çalıştırma fonksiyonu
 if __name__ == "__main__":
     print("🧠 ÇKŞÇM: Çok Katmanlı Şüpheci Çıkarım Motoru")
@@ -156,3 +157,4 @@ if __name__ == "__main__":
     print(f"🎨 Yaratıcı özellikler: Duygusal momentum, sosyal profil, şüpheci doğrulama")
    #  print(f"⚡ Performance: Ortalama {analyzer.performance_metrics['average_processing_time']:.3f} saniye")
     print(f"🎯 Bu algoritma tamamen özgün ve yaratıcı yaklaşımlar içeriyor!")
+"""

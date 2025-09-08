@@ -3,9 +3,7 @@ from typing import Dict
 
 
 class SocialSignalAnalyzer:
-    """ Sosyal Sinyal Analizörü
-
-    YARATICI YAKLAŞIM: Vatandaşın sosyal durumunu dilinden çıkarır
+    """ sosyal sinyal analizörü : kişinin sosyal durumunu dilinden çıkarır
     """
 
     def __init__(self):
@@ -68,13 +66,13 @@ class SocialSignalAnalyzer:
         }
 
     def analyze_social_profile(self, text: str) -> Dict:
-        """Sosyal profil analizi"""
+        """sosyal profil analizi"""
         text_lower = text.lower()
 
         profile_scores = defaultdict(int)
         detected_signals = defaultdict(list)
 
-        # Her kategori için sinyal topla
+        # her kategori için sinyal topla
         for category, subcategories in self.social_indicators.items():
             for subcategory, keywords in subcategories.items():
                 for keyword in keywords:
@@ -82,7 +80,7 @@ class SocialSignalAnalyzer:
                         profile_scores[f"{category}_{subcategory}"] += 1
                         detected_signals[f"{category}_{subcategory}"].append(keyword)
 
-        # Profil çıkarımları
+        # profil çıkarımları
         inferred_profile = self._infer_citizen_profile(profile_scores, detected_signals)
 
         return {
@@ -93,7 +91,7 @@ class SocialSignalAnalyzer:
         }
 
     def _infer_citizen_profile(self, scores: Dict, signals: Dict) -> Dict:
-        """Sosyal profil çıkarımı"""
+        """sosyal profil çıkarımı"""
         profile = {
             'age_group': 'unknown',
             'family_status': 'unknown',
@@ -102,7 +100,7 @@ class SocialSignalAnalyzer:
             'civic_engagement': 'unknown'
         }
 
-        # Yaş grubu çıkarımı
+        # yaş grubu çıkarımı
         if scores.get('family_status_elderly_indicators', 0) > 0:
             profile['age_group'] = 'elderly'
         elif scores.get('family_status_has_family', 0) > 0:
@@ -110,13 +108,13 @@ class SocialSignalAnalyzer:
         elif 'öğrenci' in str(signals):
             profile['age_group'] = 'young'
 
-        # Aile durumu
+        # aile durumu
         if scores.get('family_status_has_family', 0) > 0:
             profile['family_status'] = 'has_family'
         elif scores.get('family_status_single_indicators', 0) > 0:
             profile['family_status'] = 'single'
 
-        # Eğitim seviyesi
+        # eğitim seviyesi
         if scores.get('education_level_high_education', 0) > 0:
             profile['education_level'] = 'high'
         elif scores.get('education_level_formal_language', 0) > 0:
@@ -124,7 +122,7 @@ class SocialSignalAnalyzer:
         else:
             profile['education_level'] = 'basic'
 
-        # Ekonomik durum
+        # ekonomik durum
         if scores.get('economic_status_financial_stress', 0) > 2:
             profile['economic_level'] = 'low'
         elif scores.get('economic_status_property_ownership', 0) > 0:
@@ -132,7 +130,7 @@ class SocialSignalAnalyzer:
         else:
             profile['economic_level'] = 'middle'
 
-        # Sivil katılım
+        # sivil katılım
         if scores.get('civic_engagement_active_citizen', 0) > 1:
             profile['civic_engagement'] = 'high'
         elif scores.get('civic_engagement_community_awareness', 0) > 0:
@@ -143,12 +141,12 @@ class SocialSignalAnalyzer:
         return profile
 
     def _calculate_social_confidence(self, scores: Dict) -> float:
-        """Sosyal analiz güven skoru"""
+        """sosyal analiz güven skoru"""
         total_signals = sum(scores.values())
         if total_signals == 0:
             return 0.1
 
-        # Çeşitlilik bonusu (farklı kategorilerden sinyal)
+        # çeşitlilik puanı bonusu
         categories = set(key.split('_')[0] for key in scores.keys())
         diversity_bonus = len(categories) * 0.15
 

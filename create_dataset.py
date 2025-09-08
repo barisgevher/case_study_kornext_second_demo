@@ -6,7 +6,7 @@ import pandas as pd
 def process_data(file_path):
     """
     Belirtilen formattaki metin dosyasını okur ve her bir dilekçeyi
-    yapısal bir şekilde (dosya adı, tarih, metin olarak) ayırır.
+    yapısal bir şekilde (dosya adı, tarih, metin olarak) ayırır. ve kayıt eder
 
     """
     try:
@@ -43,7 +43,7 @@ def create_training_dataset(folder_path: str, output_filename: str):
     """
     train_data_path = os.path.join(folder_path, "train_data.txt")
 
-    # 2. ADIM: Verileri yapısal olarak oku ve ayır
+    # verileri yapısal olarak oku ve ayır
     documents = process_data(train_data_path)
 
     if not documents:
@@ -52,28 +52,27 @@ def create_training_dataset(folder_path: str, output_filename: str):
 
     print(f"Toplam {len(documents)} dilekçe bulundu ve yapısal olarak ayrıştırıldı.")
 
-    # 3. ADIM: PetitionAnalyzer'dan bir nesne oluştur
+    # PetitionAnalyzer'dan bir nesne oluştur
     analyzer = PetitionAnalyzer()
 
     labeled_data = []
 
-    # 4. ADIM: Her dilekçeyi analiz et ve sonuçları orijinal veriyle birleştir
+    # her dilekçeyi analiz et ve sonuçları orijinal veriyle birleştir
     for i, doc in enumerate(documents, 1):
         print(f"Analiz ediliyor: {i}/{len(documents)} ({doc['dosya']})")
 
-        # Analiz metodunu çağır
         analysis_result = analyzer.analyze_petition_creative(doc['metin'])
 
-        # Orijinal metin ve analiz sonucunu birleştirerek tam bir kayıt oluştur
+        # orijinal metin ve analiz sonucunu birleştirerek tam bir kayıt oluştur
         final_record = {
             'dosya_adi': doc['dosya'],
             'tarih': doc['tarih'],
-            'ham_metin': doc['metin'],   # Makine öğrenmesi için GİRDİ (Feature)
-            **analysis_result           # Makine öğrenmesi için ÇIKTILAR (Labels)
+            'ham_metin': doc['metin'],   # makine öğrenmesi için girdi - feature
+            **analysis_result           # makine öğrenmesi için çıktılar - labels
         }
         labeled_data.append(final_record)
 
-    # 5. ADIM: Etiketli veri setini DataFrame'e dönüştür ve kaydet
+    # etiketli veri setini dataframe dönüştür
     df = pd.DataFrame(labeled_data)
     df.to_excel(output_filename, index=False)
     print(f"\nAnaliz tamamlandı! Eğitim veri seti '{output_filename}' dosyasına kaydedildi.")
@@ -81,19 +80,17 @@ def create_training_dataset(folder_path: str, output_filename: str):
     return df
 
 
-# 6. ADIM: Betiği çalıştırılabilir yap
+
 if __name__ == "__main__":
-    # Ayarları buradan yönetebilirsiniz
     TRAINING_FILES_FOLDER = "data"
     OUTPUT_EXCEL_FILE = "data/train_dataset.xlsx"
 
-    # Ana fonksiyonu çağır
     training_df = create_training_dataset(
         folder_path=TRAINING_FILES_FOLDER,
         output_filename=OUTPUT_EXCEL_FILE
     )
 
-    # Oluşturulan DataFrame'in bir önizlemesini göster
+    # head
     if training_df is not None:
-        print("\n--- Veri Seti Önizlemesi (İlk 5 Satır) ---")
+        print("\n--- veri seti ön izlemesi ---")
         print(training_df.head())

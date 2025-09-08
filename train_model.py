@@ -11,18 +11,18 @@ import ast
 
 
 def train_classification_model(texts: List[str], labels: List[str], model_type: str = "svm"):
-    """Sınıflandırma modeli eğit"""
+    """sınıflandırma modeli eğit"""
 
     # TF-IDF vektörleştirme
     vectorizer = TfidfVectorizer(max_features=1000, ngram_range=(1, 2))
     X = vectorizer.fit_transform(texts)
 
-    # Train-test split
+    # Train-test ayırma
     X_train, X_test, y_train, y_test = train_test_split(
         X, labels, test_size=0.2, random_state=42
     )
 
-    # Model seçimi
+    # model seçimi
     if model_type == "nb":
         model = MultinomialNB()
     elif model_type == "svm":
@@ -32,17 +32,17 @@ def train_classification_model(texts: List[str], labels: List[str], model_type: 
     else:
         raise ValueError("Geçersiz model tipi")
 
-    # Eğitim
+    # eğitim
     model.fit(X_train, y_train)
 
-    # Değerlendirme
+    # değerlendirme
     train_score = model.score(X_train, y_train)
     test_score = model.score(X_test, y_test)
 
     print(f"Eğitim Doğruluğu: {train_score:.2%}")
     print(f"Test Doğruluğu: {test_score:.2%}")
 
-    # Modeli kaydet
+    # modeli kaydet
     joblib.dump(model, f"models/model_{model_type}.pkl")
     joblib.dump(vectorizer, "models/vectorizer.pkl")
 
@@ -50,8 +50,8 @@ def train_classification_model(texts: List[str], labels: List[str], model_type: 
 
 def extract_label_from_analysis(analysis_str: str, label_key: str = 'action'):
     """
-       String formatındaki bir "liste içindeki sözlük" yapısından istenen anahtarın değerini çıkarır.
-    Örnek: analysis_str = "[{'action': 'immediate_response', 'priority': 'P1'}]"
+       string formatındaki bir liste içindeki sözlük yapısından istenen anahtarın değerini çıkarır.
+    örnek: analysis_str = "[{'action': 'immediate_response', 'priority': 'P1'}]"
            label_key = 'priority'
            Dönen Değer => 'P1'.
     """

@@ -4,28 +4,26 @@ import tkinter as tk
 from tkinter import filedialog, scrolledtext, messagebox
 from datetime import datetime
 import pandas as pd
-
-# Yeni yapıya göre doğru importlar
-# Projenizin 'src' klasörünü Python'un tanıması için yola ekliyoruz
 import sys
+
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 from src.petition_analyzer import PetitionAnalyzer
-from src.utils import pdf_to_text  # PDF okuyucuyu utils'e taşıdık
+from src.utils import pdf_to_text, format_result_summary
 
-# --- Ayarlar ve Sabitler ---
+# ayarlar ve sabit değerler
 DATA_FOLDER = "data"
 TRAIN_DATA_FILE = os.path.join(DATA_FOLDER, "train_data.txt")
 JSON_RESULTS_FILE = os.path.join(DATA_FOLDER, "petition_analyze_results.json")
 
 
 def setup_project_structure():
-    """Gerekli klasörlerin var olduğundan emin olur."""
+    """klasör kontolü."""
     os.makedirs(DATA_FOLDER, exist_ok=True)
 
 
 def save_to_json(result: dict):
-    """Analiz sonucunu JSON dosyasına kaydeder/günceller."""
+    """sonucu json olarak kayıt eder."""
     if os.path.exists(JSON_RESULTS_FILE):
         with open(JSON_RESULTS_FILE, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -37,7 +35,7 @@ def save_to_json(result: dict):
 
 
 def save_to_training_data(text: str, base_filename: str):
-    """Metni, başlık bilgileriyle birlikte train_data.txt'ye ekler."""
+    """çıkarılan metni txt dosyasına kayıt eder"""
     with open(TRAIN_DATA_FILE, "a", encoding="utf-8") as f_train:
         f_train.write(f"\n\n{'=' * 50}\n")
         f_train.write(f"Dosya: {base_filename}\n")
@@ -48,39 +46,40 @@ def save_to_training_data(text: str, base_filename: str):
 
 
 def process_text_and_update_ui(text: str, source_name: str):
-    """Verilen metni analiz eder, kaydeder ve arayüzü günceller."""
+    """analiz ve kayıt işlemleri"""
     if not text.strip():
         messagebox.showwarning("Uyarı", "İşlenecek metin bulunamadı.")
         return
 
-    # 1. Analiz
+    # analiz
     analyzer = PetitionAnalyzer()
     result = analyzer.analyze_petition_creative(text)
     result["kaynak_dosya"] = source_name
 
-    # 2. Sonuçları JSON olarak kaydet
+    # sonuçları json olarak kayıt etme
     save_to_json(result)
 
-    # 3. Eğitim verisine ekle
+    #eğitim verisine ekle
     save_to_training_data(text, source_name)
 
     append_to_excel_dataset(result, text, source_name)
 
-    # 4. Arayüzü güncelle
+    # arayüzü güncelle
     result_text.config(state=tk.NORMAL)
     result_text.delete('1.0', tk.END)
-    pretty_result = json.dumps(result, indent=4, ensure_ascii=False)
-    result_text.insert(tk.END, pretty_result)
+    summary_output = format_result_summary(result)
+    # print(result)
+    result_text.insert(tk.END, summary_output)
     result_text.config(state=tk.DISABLED)
 
     status_label.config(
-        text=f"✅ Başarılı: '{source_name}' işlendi ve kaydedildi.",
+        text=f"işlem başarılı: '{source_name}' işlendi ve kaydedildi.",
         fg="green"
     )
 
 
 def handle_pdf_selection():
-    """PDF seçme ve işleme mantığı."""
+    """Pdf seçme ve işleme mantığı."""
     path = filedialog.askopenfilename(filetypes=[("PDF Dosyaları", "*.pdf")])
     if not path:
         return
@@ -93,47 +92,47 @@ def handle_pdf_selection():
 
 
 def handle_text_input():
-    """Metin kutusundan veri işleme mantığı."""
+    """metin kutusundan veri işleme mantığı."""
     text = input_text.get("1.0", tk.END)
-    # Metin girişi için benzersiz bir isim oluştur
+    # metin girdisi için benzersiz bir isim oluştur
     source_name = f"metin_girdisi_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     process_text_and_update_ui(text, source_name)
 
 def append_to_excel_dataset(result: dict, text: str, source_name: str):
     """
-    Yeni analiz sonucunu 'egitim_veriseti.xlsx' dosyasına yeni bir satır olarak ekler.
+    Yeni analiz sonucunu 'training_dataset.xlsx' dosyasına yeni bir satır olarak ekler.
     Dosya yoksa oluşturur.
     """
-    excel_path = os.path.join(DATA_FOLDER, "egitim_veriseti.xlsx")
+    excel_path = os.path.join(DATA_FOLDER, "training_dataset.xlsx")
 
-    # 1. Yeni satır verisini hazırla (create_dataset.py'deki mantığın aynısı)
+    # yeni kayıt verisini hazırla
     new_record = {
         'dosya_adi': source_name,
         'tarih': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'ham_metin': text.strip(),
-        **result  # Analiz sonucundaki tüm anahtarları ayrı sütunlar olarak aç
+        **result  # analiz sonucundaki tüm anahtarları ayrı sütunlar olarak aç
     }
     new_row_df = pd.DataFrame([new_record])
 
-    # 2. Mevcut Excel dosyasını oku ve yeni satırı ekle
+    # mevcut excel dosyasını oku ve yeni satırı ekle
     try:
         if os.path.exists(excel_path):
             # Dosya varsa, oku ve sonuna ekle
             existing_df = pd.read_excel(excel_path)
             updated_df = pd.concat([existing_df, new_row_df], ignore_index=True)
         else:
-            # Dosya yoksa, bu yeni satır ilk veri olacak
+            # dosya yoksa, bu yeni satır ilk veri olarak yazılacak
             updated_df = new_row_df
 
-        # 3. Güncellenmiş DataFrame'i tekrar Excel'e yaz
+        # güncellenmiş dataframei tekrar excele yaz
         updated_df.to_excel(excel_path, index=False)
 
     except Exception as e:
-        # Dosya başka bir programda açıksa veya başka bir hata olursa...
+        # dosya başka bir programda açıksa veya başka bir hata olursa hata göster
         messagebox.showerror("Excel Yazma Hatası", f"Eğitim veriseti güncellenemedi:\n{e}")
 
 
-# --- Arayüz Kurulumu ---
+
 if __name__ == "__main__":
     setup_project_structure()
 
@@ -144,7 +143,7 @@ if __name__ == "__main__":
     main_frame = tk.Frame(root, padx=10, pady=10)
     main_frame.pack(fill=tk.BOTH, expand=True)
 
-    # Sol Taraf: Girdi Alanları
+    # sol taraf: girdi alanları
     left_frame = tk.Frame(main_frame, width=380)
     left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
 
@@ -159,7 +158,7 @@ if __name__ == "__main__":
     text_button = tk.Button(left_frame, text="Metni İşle", command=handle_text_input)
     text_button.pack(fill=tk.X, pady=(5, 0))
 
-    # Sağ Taraf: Sonuç Ekranı
+    # sonuç Ekranı
     right_frame = tk.Frame(main_frame, width=380)
     right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(5, 0))
 
@@ -167,7 +166,7 @@ if __name__ == "__main__":
     result_text = scrolledtext.ScrolledText(right_frame, height=20, wrap=tk.WORD, state=tk.DISABLED)
     result_text.pack(fill=tk.BOTH, expand=True, pady=5)
 
-    # Alt Taraf: Durum Etiketi
+    # alt taraf durum etiketi
     status_label = tk.Label(root, text="İşlem için bir dosya seçin veya metin girin.", bd=1, relief=tk.SUNKEN, anchor="w")
     status_label.pack(side=tk.BOTTOM, fill=tk.X)
 

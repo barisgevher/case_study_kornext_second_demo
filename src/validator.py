@@ -1,13 +1,10 @@
 import re
 from typing import Dict
-
+import difflib
 
 class SkepticalValidator:
     """
-    🔍 Şüpheci Doğrulayıcı
-
-    YARATICI YAKLAŞIM: Her bulguyu şüpheyle karşılar ve çapraz doğrular
-    "Güvenilir misin?" sorusu her adımda
+     Şüpheci Doğrulayıcı: her bulguyu şüpheyle karşılar ve çapraz doğrular.
     """
 
     def __init__(self):
@@ -21,20 +18,20 @@ class SkepticalValidator:
             },
 
             'address_validation': {
-                'location_keywords': ['mahalle', 'sokak', 'cadde', 'bulvar', 'köy'],
+                'location_keywords': ['mahalle', 'sokak', 'cadde', 'bulvar', 'köy', 'ilçe', 'il'],
                 'suspicious_patterns': [r'\d{5,}', r'[!@#$%^&*()]'],
-                'context_requirements': ['yaşa', 'ikamet', 'otur', 'ev']
+                'context_requirements': ['yaşa', 'ikamet', 'otur', 'ev', 'daire']
             },
 
             'consistency_checks': {
-                'tone_consistency': True,  # Formal dil + argo karışmamalı
-                'temporal_consistency': True,  # Zaman ifadeleri tutarlı olmalı
-                'logical_consistency': True  # Mantıksal çelişkiler kontrol edilir
+                'tone_consistency': True,  
+                'temporal_consistency': True,
+                'logical_consistency': True
             }
         }
 
     def validate_extraction(self, extraction_result: Dict, original_text: str) -> Dict:
-        """Çıkarım sonuçlarını doğrula"""
+        """çıkarım sonuçlarını doğrula"""
         validation_results = {
             'overall_validity': True,
             'confidence_adjustment': 1.0,
@@ -43,7 +40,7 @@ class SkepticalValidator:
             'quality_score': 0.0
         }
 
-        # İsim doğrulaması
+        # isim doğrulaması
         if 'person_name' in extraction_result and extraction_result['person_name']:
             name_validation = self._validate_name(extraction_result['person_name'])
             validation_results['validation_details']['name'] = name_validation
@@ -52,7 +49,7 @@ class SkepticalValidator:
                 validation_results['red_flags'].append("Şüpheli isim formatı")
                 validation_results['confidence_adjustment'] *= 0.7
 
-        # Adres doğrulaması
+        # adres doğrulaması
         if 'address' in extraction_result and extraction_result['address']:
             address_validation = self._validate_address(extraction_result['address'], original_text)
             validation_results['validation_details']['address'] = address_validation
@@ -61,7 +58,7 @@ class SkepticalValidator:
                 validation_results['red_flags'].append("Adres bilgisi şüpheli")
                 validation_results['confidence_adjustment'] *= 0.8
 
-        # Tutarlılık kontrolü
+        # tutarlılık kontrolü
         consistency_check = self._check_consistency(extraction_result, original_text)
         validation_results['validation_details']['consistency'] = consistency_check
 
@@ -69,11 +66,11 @@ class SkepticalValidator:
             validation_results['red_flags'].append("İçerik tutarsızlıkları tespit edildi")
             validation_results['confidence_adjustment'] *= 0.6
 
-        # Genel geçerlilik
+        # genel geçerlilik
         if validation_results['confidence_adjustment'] < 0.5:
             validation_results['overall_validity'] = False
 
-        # Kalite skoru
+        # kalite skoru
         validation_results['quality_score'] = self._calculate_quality_score(validation_results)
 
         return validation_results
@@ -85,23 +82,23 @@ class SkepticalValidator:
         is_valid = True
         issues = []
 
-        # Uzunluk kontrolü
+        # uzunluk kontrolü
         if len(name) < rules['min_length'] or len(name) > rules['max_length']:
             is_valid = False
             issues.append(f"Uzunluk uygunsuz: {len(name)}")
 
-        # Pattern kontrolü
+        # pattern kontrolü
         if not re.match(rules['required_pattern'], name):
             is_valid = False
             issues.append("Türkçe isim formatına uymuyor")
 
-        # Yasak karakterler
+        # yasak karakterler
         for forbidden in rules['forbidden_patterns']:
             if re.search(forbidden, name):
                 is_valid = False
                 issues.append(f"Yasak karakter: {forbidden}")
 
-        # Türkçe bonus
+        # türkçe bonusu
         turkish_bonus = 0
         for bonus_pattern in rules['turkish_name_bonus']:
             if re.search(bonus_pattern, name):
@@ -115,24 +112,24 @@ class SkepticalValidator:
         }
 
     def _validate_address(self, address: str, context: str) -> Dict:
-        """Adres doğrulaması"""
+        """adres doğrulaması"""
         rules = self.validation_rules['address_validation']
 
         is_valid = True
         issues = []
 
-        # Konum anahtar kelimeleri kontrolü
+        # konum anahtar kelimeleri kontrolü
         has_location_keyword = any(keyword in address.lower() for keyword in rules['location_keywords'])
         if not has_location_keyword:
             is_valid = False
             issues.append("Adres anahtar kelimeleri eksik")
 
-        # Şüpheli pattern kontrolü
+        # şüpheli pattern kontrolü
         for suspicious in rules['suspicious_patterns']:
             if re.search(suspicious, address):
                 issues.append(f"Şüpheli pattern: {suspicious}")
 
-        # Bağlam kontrolü
+        # bağlam kontrolü
         context_support = any(req in context.lower() for req in rules['context_requirements'])
         if not context_support:
             issues.append("Adres bilgisi bağlamda desteklenmiyor")
@@ -145,10 +142,10 @@ class SkepticalValidator:
         }
 
     def _check_consistency(self, extraction: Dict, original_text: str) -> Dict:
-        """Tutarlılık kontrolü"""
+        """tutarlılık kontrolü"""
         issues = []
 
-        # Ton tutarlılığı (formal dil + argo kontrol)
+        # ton tutarlılığı
         text_lower = original_text.lower()
         formal_indicators = sum(1 for word in ['saygı', 'arz', 'gereği', 'takdir'] if word in text_lower)
         informal_indicators = sum(1 for word in ['ya', 'yani', 'işte'] if word in text_lower)
@@ -156,7 +153,7 @@ class SkepticalValidator:
         if formal_indicators > 0 and informal_indicators > 0:
             issues.append("Dil tutarsızlığı: Formal ve günlük dil karışımı")
 
-        # Mantıksal tutarlılık örnekleri
+        # mantıksal tutarlılık
         if 'acil' in text_lower and 'uygun gördüğünüzde' in text_lower:
             issues.append("Mantık tutarsızlığı: Acil ama esnek zaman talebi")
 
@@ -167,13 +164,13 @@ class SkepticalValidator:
         }
 
     def _calculate_quality_score(self, validation_results: Dict) -> float:
-        """Genel kalite skoru"""
+        """genel kalite skoru"""
         base_score = validation_results['confidence_adjustment']
 
-        # Red flag cezası
+        # red flag cezası
         red_flag_penalty = len(validation_results['red_flags']) * 0.15
 
-        # Detay bonusu
+        # detay bonusu
         detail_count = len(validation_results['validation_details'])
         detail_bonus = min(detail_count * 0.1, 0.3)
 
