@@ -68,7 +68,7 @@ def process_text_and_update_ui(text: str, source_name: str):
     result_text.config(state=tk.NORMAL)
     result_text.delete('1.0', tk.END)
     summary_output = format_result_summary(result)
-    # print(result)
+    print(result)
     result_text.insert(tk.END, summary_output)
     result_text.config(state=tk.DISABLED)
 
